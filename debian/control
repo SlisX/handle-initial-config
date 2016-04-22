@@ -1,0 +1,19 @@
+Source: handle-initial-config
+Section: unknown
+Priority: optional
+Maintainer: Laurent COOPER <laurent.cooper@ac-grenoble.fr>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Git: git://anonscm.debian.org/collab-maint/handle-initial-config.git
+#Vcs-Browser: http://anonscm.debian.org/?p=collab-maint/handle-initial-config.git;a=summary
+
+Package: handle-initial-config
+Architecture: all
+Depends: ${misc:Depends}
+Description: handling initial package config
+ Handling initial package config. A package can have a config script with 3 arguments
+ * possible
+ * needed
+ * configure
+ so you can configure a package that need a service in order to be configured (running local or distant database for example)

@@ -1,0 +1,14 @@
+# Defaults for handle-initial-config initscript
+# sourced by /etc/init.d/handle-initial-config
+# installed at /etc/default/handle-initial-config by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Additional options that are passed to the Daemon.
+HIC_QUEUE_DIR="/var/lib/hic"
+HIC_MIN_TIME=60
+HIC_MAX_TIME=3600
+HIC_LOGFILE="/var/log/hic.log"
+HIC_MODE="STOP_NO_QUEUE"

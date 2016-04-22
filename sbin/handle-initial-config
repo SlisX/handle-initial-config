@@ -1,0 +1,26 @@
+#!/bin/bash
+if [ -e /etc/default/handle-initial-config ];then
+	. /etc/default/handle-initial-config
+fi
+
+script="$1"
+level="$2"
+shift 2
+args="$*"
+
+# $1 is script name, $2 is priority level
+if $script $args possible; then
+	if $script $args needed; then
+		echo "Running '$script $args configure' for initial configuration"
+		$script $args configure
+	fi
+else
+	echo "Registering $script for later configuration"
+	configscript="${HIC_QUEUE_DIR}/${level}_$script"
+	cat >$configscript <<-EOF
+	#!/bin/sh
+	$script $args \$*
+EOF
+	chmod 755 $configscript
+	invoke-rc.d hic force-reload
+fi

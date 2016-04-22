@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Author: Laurent COOPER <laurent.cooper@ac-grenoble.fr>
+
+# Do NOT "set -e"
+
+PIDFILE="/var/run/hicd.pid"
+
+if [ -e /etc/default/handle-initial-config ];then
+	. /etc/default/handle-initial-config
+else
+	echo "Default config file not present ! aborting"
+	exit 1
+fi
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+
+log() {
+	logger -t $0 $*
+	echo "$(date "+%Y-%m-%d %H:%M:%S") $0: $*" >>$HIC_LOGFILE
+}
+
+run_script() {
+	[ -x "$1" ] || return 1
+	if $1 possible; then
+		if $1 needed; then
+			log "Configuration needed for $1"
+			$1 configure >>$HIC_LOGFILE 2>&1
+			RET=$?
+			if [ "$RET" = "0" ]; then
+				log "Configuration worked: dropping $1."
+				rm -f "$1"
+			else
+				log "Configuration failed: '$1 configure' returned error code $RET."
+			fi
+		else
+			log "Configuration is not needed for $1 : dropping $1."
+			rm -f "$1"
+		fi
+	else
+		log "Configuration is not yet possible for $1"
+	fi
+}
+
+run_all_scripts() {
+	for script in $HIC_QUEUE_DIR/*; do
+		if [ -x "$script" ]; then
+			run_script "$script"
+		fi
+	done
+}
+
+has_scripts_to_run() {
+	for script in $HIC_QUEUE_DIR/*; do
+		if [ -x "$script" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+# Create own PID file
+echo $$>/var/run/hicd.pid
+
+log "starting handle initial config daemon"
+delay=$HIC_MIN_TIME
+while true; do
+	if has_scripts_to_run; then
+		run_all_scripts
+	else
+		if [ "$HIC_MODE" = "STOP_NO_QUEUE" ]; then
+			log "no more script to run. Stopping daemon"
+			rm -f $PIDFILE
+			exit 0
+		else
+			log "no more script to run. delaying"
+			delay=$HIC_MAX_TIME
+		fi
+	fi
+	sleep $delay
+
+	delay=$(( $delay * 2 ))
+	if [ "$delay" -gt $HIC_MAX_TIME ]; then
+		delay=$HIC_MAX_TIME
+	fi
+done

@@ -1,0 +1,6 @@
+The Debian Package handle-initial-config
+----------------------------
+
+Package to handle configuration for application needing a service in order to be configured
+
+ -- Laurent COOPER <laurent.cooper@ac-grenoble.fr>  Thu, 14 Apr 2016 15:51:01 +0200
